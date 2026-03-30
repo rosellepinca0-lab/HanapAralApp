@@ -102,3 +102,107 @@ fun ProfileScreen(
             fontSize = 16.sp,
             color = colorResource(id = R.color.text_secondary)
         )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Course Field
+        OutlinedTextField(
+            value = course,
+            onValueChange = { course = it },
+            label = { Text("Course") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            readOnly = isReadOnly,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = if (isReadOnly) Color.Gray else Color.Black,
+                unfocusedBorderColor = Color.Gray,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Color.Gray,
+                cursorColor = if (isReadOnly) Color.Transparent else Color.Black
+            )
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Year Level Dropdown
+        ExposedDropdownMenuBox(
+            expanded = expanded && !isReadOnly,
+            onExpandedChange = { if (!isReadOnly) expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = yearLevel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Year Level") },
+                trailingIcon = {
+                    if (!isReadOnly) {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    }
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (isReadOnly) Color.Gray else Color.Black,
+                    unfocusedBorderColor = Color.Gray,
+                    focusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = Color.Gray
+                )
+            )
+            if (!isReadOnly) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    yearLevels.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                yearLevel = selectionOption
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Update Button
+        if (!isReadOnly) {
+            Button(
+                onClick = {
+                    onUpdateClick(course, yearLevel)
+                    showViewPopup = true
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = !isLoading && course.isNotBlank(),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(id = R.color.accent_primary)
+                )
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Update Profile",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
