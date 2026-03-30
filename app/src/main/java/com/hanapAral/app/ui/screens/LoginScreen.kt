@@ -43,3 +43,46 @@ fun LoginScreen(
             color = colorResource(id = R.color.text_secondary),
             modifier = Modifier.padding(top = 8.dp)
         )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.padding(bottom = 80.dp),
+                color = colorResource(id = R.color.accent_primary)
+            )
+        } else {
+            Button(
+                onClick = onGoogleSignInClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(bottom = 24.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(id = R.color.accent_primary)
+                )
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_google),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Continue with Google",
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
+}
