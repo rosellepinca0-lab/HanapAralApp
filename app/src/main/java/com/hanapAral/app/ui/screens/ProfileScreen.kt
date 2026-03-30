@@ -26,3 +26,79 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.hanapAral.app.R
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileScreen(
+    name: String,
+    email: String,
+    photoUrl: String?,
+    initialCourse: String,
+    initialYearLevel: String,
+    yearLevels: Array<String>,
+    isLoading: Boolean = false,
+    isReadOnly: Boolean = true,
+    onUpdateClick: (course: String, yearLevel: String) -> Unit = { _, _ -> }
+) {
+    var course by remember { mutableStateOf(initialCourse) }
+    var yearLevel by remember { mutableStateOf(initialYearLevel) }
+    var expanded by remember { mutableStateOf(false) }
+    var showViewPopup by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialCourse, initialYearLevel) {
+        course = initialCourse
+        yearLevel = initialYearLevel
+    }
+
+    // Profile View Popup
+    if (showViewPopup) {
+        ProfileViewPopup(
+            name = name,
+            email = email,
+            photoUrl = photoUrl,
+            course = course,
+            yearLevel = yearLevel,
+            onDismiss = { showViewPopup = false }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Profile Image
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(photoUrl)
+                .crossfade(true)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
+                .build(),
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .size(140.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray.copy(alpha = 0.2f), CircleShape),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Name and Email
+        Text(
+            text = name,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+
+        Text(
+            text = email,
+            fontSize = 16.sp,
+            color = colorResource(id = R.color.text_secondary)
+        )
