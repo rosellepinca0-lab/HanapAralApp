@@ -24,3 +24,17 @@ class AuthRepository(private val context: Context) {
     }
 
     fun getSignInIntent(): Intent = googleSignInClient.signInIntent
+
+    suspend fun signInWithGoogle(idToken: String): FirebaseUser? {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val result = auth.signInWithCredential(credential).await()
+        return result.user
+    }
+
+    fun getCurrentUser(): FirebaseUser? = auth.currentUser
+
+    fun signOut() {
+        auth.signOut()
+        googleSignInClient.signOut()
+    }
+}
