@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HanapAral</string>
+    <!-- IMPORTANT: Replace with your actual web client ID from google-services.json -->
+    <string name="default_web_client_id">734530698937-6adhidguosa6vfucnn0kpr4h28t9lqkm.apps.googleusercontent.com</string>
+
+    <string-array name="year_levels">
+        <item>1st Year</item>
+        <item>2nd Year</item>
+        <item>3rd Year</item>
+        <item>4th Year</item>
+    </string-array>
+
+    <string name="hint_write_announcement">Write an announcement...</string>
+    <string name="btn_post">Post</string>
+    <string name="btn_profile">Profile</string>
+    <string name="btn_groups">Groups</string>
+</resources>
