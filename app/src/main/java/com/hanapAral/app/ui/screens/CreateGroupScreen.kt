@@ -84,3 +84,49 @@ fun CreateGroupScreen(
                         )
                     }
                 }
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Group Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = isCreationEnabled && !isLoading,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorResource(id = R.color.accent_primary),
+                        focusedLabelColor = colorResource(id = R.color.accent_primary)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = subject,
+                    onValueChange = { subject = it },
+                    label = { Text("Subject / Course") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = isCreationEnabled && !isLoading,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorResource(id = R.color.accent_primary),
+                        focusedLabelColor = colorResource(id = R.color.accent_primary)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    enabled = isCreationEnabled && !isLoading,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorResource(id = R.color.accent_primary),
+                        focusedLabelColor = colorResource(id = R.color.accent_primary)
+                    )
+                )
