@@ -130,3 +130,35 @@ fun CreateGroupScreen(
                         focusedLabelColor = colorResource(id = R.color.accent_primary)
                     )
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { onCreateClick(name, subject, description) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    enabled = isCreationEnabled && !isLoading && name.isNotBlank() && subject.isNotBlank(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.accent_primary)
+                    )
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "CREATE GROUP",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
