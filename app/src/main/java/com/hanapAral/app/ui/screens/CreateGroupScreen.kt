@@ -16,3 +16,71 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hanapAral.app.R
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateGroupScreen(
+    isCreationEnabled: Boolean = true,
+    isLoading: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onCreateClick: (String, String, String) -> Unit = { _, _, _ -> }
+) {
+    var name by remember { mutableStateOf("") }
+    var subject by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Create Study Group",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.text_primary)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colorResource(id = R.color.text_primary)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(id = R.color.surface)
+                )
+            )
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (!isCreationEnabled) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp)
+                    ) {
+                        Text(
+                            text = "Group creation is currently disabled by the administrator.",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
