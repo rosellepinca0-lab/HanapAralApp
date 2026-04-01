@@ -16,3 +16,49 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hanapAral.app.R
 import com.hanapAral.app.data.model.StudyGroup
+
+@Composable
+fun GroupsScreen(
+    groups: List<StudyGroup>,
+    currentUserId: String = "",
+    isLoading: Boolean = false,
+    onGroupClick: (StudyGroup) -> Unit = {},
+    onJoinClick: (StudyGroup) -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Available Study Groups",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = colorResource(id = R.color.text_primary),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = colorResource(id = R.color.accent_primary))
+            }
+        } else if (groups.isEmpty()) {
+            EmptyGroupsState()
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(groups) { group ->
+                    val isMember = group.members.contains(currentUserId)
+                    GroupCard(
+                        group = group,
+                        isMember = isMember,
+                        onCardClick = { onGroupClick(group) },
+                        onJoinClick = { onJoinClick(group) }
+                    )
+                }
+            }
+        }
+    }
+}
