@@ -55,3 +55,118 @@ class GroupViewModel : ViewModel() {
 
     private val _announcementHeader = MutableLiveData<String>()
     val announcementHeader: LiveData<String> = _announcementHeader
+
+    init {
+        observeGroups()
+    }
+
+    private fun observeGroups() {
+        viewModelScope.launch {
+            groupRepository.getGroupsFlow().collectLatest { groupList ->
+                _groups.value = groupList
+            }
+        }
+    }
+
+    fun observeChatMessages(groupId: String) {
+        viewModelScope.launch {
+            groupRepository.getChatMessagesFlow(groupId).collectLatest { messageList ->
+                _chatMessages.value = messageList
+            }
+        }
+    }
+
+    fun loadRemoteConfig() {
+        viewModelScope.launch {
+            try {
+                remoteConfigRepository.fetchAndActivate()
+                _isGroupCreationEnabled.value = remoteConfigRepository.isGroupCreationEnabled()
+                _isJoinEnabled.value = remoteConfigRepository.isJoinGroupEnabled()
+                _isAnnouncementPostingEnabled.value = remoteConfigRepository.isAnnouncementPostingEnabled()
+                _maxMembers.value = remoteConfigRepository.getMaxMembersPerGroup()
+                _announcementHeader.value = remoteConfigRepository.getAnnouncementHeader()
+            } catch (e: Exception) {
+                _isGroupCreationEnabled.value = true
+                _isJoinEnabled.value = true
+                _isAnnouncementPostingEnabled.value = true
+                _maxMembers.value = 20L
+            }
+        }
+    }
+
+    fun loadGroups() {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _groups.value = groupRepository.getAllGroups()
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun loadGroupDetail(groupId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _currentGroup.value = groupRepository.getGroupById(groupId)
+                _announcements.value = groupRepository.getAnnouncements(groupId)
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun createGroup(group: StudyGroup) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val id = groupRepository.createGroup(group)
+                _createSuccess.value = id
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun joinGroup(groupId: String, userId: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                groupRepository.joinGroup(groupId, userId)
+                _joinSuccess.value = true
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun postAnnouncement(groupId: String, announcement: Announcement) {
+        viewModelScope.launch {
+            try {
+                groupRepository.postAnnouncement(groupId, announcement)
+                loadGroupDetail(groupId)
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
+    fun sendChatMessage(groupId: String, message: ChatMessage) {
+        viewModelScope.launch {
+            try {
+                groupRepository.sendChatMessage(groupId, message)
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+}
