@@ -136,3 +136,33 @@ fun GroupCard(
         }
     }
 }
+@Composable
+fun EmptyGroupsState() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "📚", fontSize = 48.sp)
+        Text(
+            text = "No study groups yet",
+            fontSize = 18.sp,
+            color = colorResource(id = R.color.text_secondary)
+        )
+        Text(
+            text = "Be the first to create one!",
+            fontSize = 14.sp,
+            color = colorResource(id = R.color.text_secondary)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GroupsScreenPreview() {
+    val sampleGroups = listOf(
+        StudyGroup(id = "1", name = "Android Devs", subject = "Mobile Dev", adminName = "Marjorie", members = listOf("1", "2"), maxMembers = 20),
+        StudyGroup(id = "2", name = "Kotlin Enthusiasts", subject = "Programming", adminName = "User", members = listOf("3"), maxMembers = 15)
+    )
+    GroupsScreen(groups = sampleGroups, currentUserId = "1")
+}
