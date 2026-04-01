@@ -62,3 +62,77 @@ fun GroupsScreen(
         }
     }
 }
+@Composable
+fun GroupCard(
+    group: StudyGroup,
+    isMember: Boolean,
+    onCardClick: () -> Unit,
+    onJoinClick: () -> Unit
+) {
+    Card(
+        onClick = onCardClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(id = R.color.surface)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = group.name,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.text_primary)
+            )
+
+            Text(
+                text = group.subject,
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.accent_primary),
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Admin: ${group.adminName}",
+                    fontSize = 12.sp,
+                    color = colorResource(id = R.color.text_secondary),
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = "${group.members.size}/${group.maxMembers} members",
+                    fontSize = 12.sp,
+                    color = colorResource(id = R.color.text_secondary),
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
+                Button(
+                    onClick = onJoinClick,
+                    enabled = !isMember,
+                    modifier = Modifier.height(36.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isMember) colorResource(id = R.color.text_secondary) else colorResource(id = R.color.accent_primary),
+                        disabledContainerColor = colorResource(id = R.color.divider)
+                    )
+                ) {
+                    Text(
+                        text = if (isMember) "Joined" else "Join",
+                        fontSize = 12.sp,
+                        color = if (isMember) colorResource(id = R.color.text_primary) else Color.White
+                    )
+                }
+            }
+        }
+    }
+}
