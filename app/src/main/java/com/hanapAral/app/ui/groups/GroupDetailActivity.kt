@@ -41,3 +41,42 @@ class GroupDetailActivity : AppCompatActivity() {
 
             // Allow posting if feature is enabled in Remote Config AND user is an admin/creator
             val canPostAnnouncements = isAnnouncementPostingEnabled && (isGlobalAdmin || isGroupCreator)
+
+            GroupDetailScreen(
+                group = group,
+                announcements = announcements,
+                chatMessages = chatMessages,
+                currentUserId = currentUserId,
+                isAdminOfGroup = canPostAnnouncements,
+                isLoading = isLoading,
+                onBackClick = { finish() },
+                onPostAnnouncement = { content, type ->
+                    val announcement = Announcement(
+                        content = content,
+                        type = type,
+                        authorName = currentUser?.displayName ?: "Unknown",
+                        timestamp = System.currentTimeMillis()
+                    )
+                    groupViewModel.postAnnouncement(groupId, announcement)
+                },
+                onSendMessage = { text ->
+                    val message = ChatMessage(
+                        senderId = currentUserId,
+                        senderName = currentUser?.displayName ?: "User",
+                        message = text,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    groupViewModel.sendChatMessage(groupId, message)
+                }
+            )
+        }
+
+        groupViewModel.loadGroupDetail(groupId)
+        groupViewModel.observeChatMessages(groupId)
+        groupViewModel.loadRemoteConfig()
+
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            profileViewModel.getUserProfile(user.uid)
+        }
+    }
+}
