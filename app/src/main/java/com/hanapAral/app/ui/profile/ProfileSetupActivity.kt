@@ -51,3 +51,18 @@ class ProfileSetupActivity : AppCompatActivity() {
 
         observeViewModel()
     }
+
+    private fun observeViewModel() {
+        profileViewModel.saveSuccess.observe(this) { success ->
+            if (success) {
+                showToast("Profile saved!")
+                startActivity(Intent(this, HomeActivity::class.java))
+                finish()
+            }
+        }
+
+        profileViewModel.error.observe(this) { errorMsg ->
+            errorMsg?.let { showToast(it) }
+        }
+    }
+}
