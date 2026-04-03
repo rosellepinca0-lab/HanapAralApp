@@ -217,3 +217,98 @@ fun GroupDetailScreen(
                     GroupInfoCard(group)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Announcements",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(id = R.color.text_primary)
+                        )
+                        if (isAdminOfGroup) {
+                            TextButton(onClick = { showAnnouncementDialog = true }) {
+                                Text("Add New", color = colorResource(id = R.color.accent_primary))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (announcements.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No announcements yet",
+                            color = colorResource(id = R.color.text_secondary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    items(announcements) { announcement ->
+                        AnnouncementItem(announcement)
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = colorResource(id = R.color.divider))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Group Chat",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.text_primary),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                items(chatMessages) { message ->
+                    ChatMessageItem(message, isCurrentUser = message.senderId == currentUserId)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupInfoCard(group: StudyGroup) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.surface)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = group.subject,
+                fontSize = 16.sp,
+                color = colorResource(id = R.color.accent_primary),
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = group.description,
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Admin: ${group.adminName}",
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+            Text(
+                text = "${group.members.size}/${group.maxMembers} members",
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+        }
+    }
+}
