@@ -122,3 +122,98 @@ fun GroupDetailScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = announcementText,
+                        onValueChange = { announcementText = it },
+                        placeholder = {
+                            Text(
+                                if (selectedType == "Study Reminder") "Enter study details (time, topic)..."
+                                else "Enter your announcement...",
+                                color = colorResource(id = R.color.text_secondary).copy(alpha = 0.6f)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = colorResource(id = R.color.accent_secondary),
+                            unfocusedIndicatorColor = colorResource(id = R.color.divider)
+                        )
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(8.dp)
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        group?.name ?: "Group Detail",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.text_primary)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colorResource(id = R.color.text_primary)
+                        )
+                    }
+                },
+                actions = {
+                    if (isAdminOfGroup) {
+                        IconButton(onClick = { showAnnouncementDialog = true }) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Add Announcement",
+                                tint = colorResource(id = R.color.accent_primary)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(id = R.color.surface)
+                )
+            )
+        },
+        bottomBar = {
+            ChatInputBar(
+                value = chatText,
+                onValueChange = { chatText = it },
+                onSendClick = {
+                    if (chatText.isNotBlank()) {
+                        onSendMessage(chatText)
+                        chatText = ""
+                    }
+                }
+            )
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
+    ) { paddingValues ->
+        if (isLoading || group == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = colorResource(id = R.color.accent_primary))
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+                item {
+                    GroupInfoCard(group)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
