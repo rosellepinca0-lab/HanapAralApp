@@ -184,3 +184,69 @@ fun ReminderScreen(
         }
     }
 }
+
+@Composable
+fun ReminderCard(
+    reminder: StudyReminder,
+    onDelete: () -> Unit,
+    onToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = reminder.time,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (reminder.isActive) colorResource(id = R.color.text_primary) else Color.Gray
+                )
+                Text(
+                    text = reminder.title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (reminder.isActive) colorResource(id = R.color.accent_primary) else Color.Gray
+                )
+                Text(
+                    text = reminder.days,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Switch(
+                checked = reminder.isActive,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = colorResource(id = R.color.accent_primary),
+                    uncheckedThumbColor = Color.LightGray,
+                    uncheckedTrackColor = Color.Transparent
+                )
+            )
+
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray.copy(alpha = 0.5f))
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReminderScreenPreview() {
+    val sample = listOf(
+        StudyReminder(title = "Android Development", time = "08:00 PM", days = "Mon, Wed, Fri"),
+        StudyReminder(title = "Database Systems", time = "07:00 AM", days = "Daily", isActive = false)
+    )
+    ReminderScreen(reminders = sample)
+}
