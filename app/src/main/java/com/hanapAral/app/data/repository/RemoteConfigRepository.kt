@@ -23,3 +23,23 @@ class RemoteConfigRepository {
             )
         )
     }
+
+    suspend fun fetchAndActivate(): Boolean {
+        return remoteConfig.fetchAndActivate().await()
+    }
+
+    fun isGroupCreationEnabled(): Boolean =
+        remoteConfig.getBoolean("is_group_creation_enabled")
+
+    fun isJoinGroupEnabled(): Boolean =
+        remoteConfig.getBoolean("is_join_group_enabled")
+
+    fun isAnnouncementPostingEnabled(): Boolean =
+        remoteConfig.getBoolean("is_announcement_posting_enabled")
+
+    fun getMaxMembersPerGroup(): Long =
+        remoteConfig.getLong("max_members_per_group")
+
+    fun getAnnouncementHeader(): String =
+        remoteConfig.getString("announcement_header")
+}
