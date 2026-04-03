@@ -30,3 +30,95 @@ import com.hanapAral.app.data.model.ChatMessage
 import com.hanapAral.app.data.model.StudyGroup
 import java.text.SimpleDateFormat
 import java.util.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GroupDetailScreen(
+    group: StudyGroup?,
+    announcements: List<Announcement>,
+    chatMessages: List<ChatMessage>,
+    currentUserId: String,
+    isAdminOfGroup: Boolean = false,
+    isLoading: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onPostAnnouncement: (String, String) -> Unit = { _, _ -> },
+    onSendMessage: (String) -> Unit = {}
+) {
+    var chatText by remember { mutableStateOf("") }
+    var showAnnouncementDialog by remember { mutableStateOf(false) }
+    var announcementText by remember { mutableStateOf("") }
+
+    val announcementTypes = listOf("Group Announcement", "Study Reminder")
+    var selectedType by remember { mutableStateOf(announcementTypes[0]) }
+
+    if (showAnnouncementDialog) {
+        AlertDialog(
+            onDismissRequest = { showAnnouncementDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (announcementText.isNotBlank()) {
+                            onPostAnnouncement(announcementText, selectedType)
+                            announcementText = ""
+                            showAnnouncementDialog = false
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.accent_primary)
+                    )
+                ) {
+                    Text("POST", fontWeight = FontWeight.Bold)
+                }
+            },
+            title = {
+                Text(
+                    "New Announcement",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Select Type:",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Radio Button Group
+                    Column(Modifier.selectableGroup()) {
+                        announcementTypes.forEach { text ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .selectable(
+                                        selected = (text == selectedType),
+                                        onClick = { selectedType = text },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(horizontal = 0.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (text == selectedType),
+                                    onClick = null, // null recommended for accessibility with selectable modifier
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = colorResource(id = R.color.accent_primary)
+                                    )
+                                )
+                                Text(
+                                    text = text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
