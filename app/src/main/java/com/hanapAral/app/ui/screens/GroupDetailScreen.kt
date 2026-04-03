@@ -312,3 +312,126 @@ fun GroupInfoCard(group: StudyGroup) {
         }
     }
 }
+
+@Composable
+fun AnnouncementItem(announcement: Announcement) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.surface))
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = announcement.type ?: "Group Announcement",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.accent_primary)
+                )
+                Text(
+                    text = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(Date(announcement.timestamp)),
+                    fontSize = 11.sp,
+                    color = colorResource(id = R.color.text_secondary)
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = announcement.content,
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_primary)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "By ${announcement.authorName}",
+                fontSize = 11.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatMessageItem(message: ChatMessage, isCurrentUser: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
+    ) {
+        if (!isCurrentUser) {
+            Text(
+                text = message.senderName,
+                fontSize = 11.sp,
+                color = colorResource(id = R.color.text_secondary),
+                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            )
+        }
+        Surface(
+            color = if (isCurrentUser) colorResource(id = R.color.accent_primary) else colorResource(id = R.color.surface),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = if (isCurrentUser) 16.dp else 0.dp,
+                bottomEnd = if (isCurrentUser) 0.dp else 16.dp
+            ),
+            tonalElevation = 1.dp
+        ) {
+            Text(
+                text = message.message,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                fontSize = 14.sp,
+                color = if (isCurrentUser) Color.White else colorResource(id = R.color.text_primary)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatInputBar(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSendClick: () -> Unit
+) {
+    Surface(
+        tonalElevation = 2.dp,
+        color = colorResource(id = R.color.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type a message...") },
+                maxLines = 4,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorResource(id = R.color.accent_primary)
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = onSendClick,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(colorResource(id = R.color.accent_primary), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+}
