@@ -30,3 +30,59 @@ data class StudyReminder(
     val days: String,
     val isActive: Boolean = true
 )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReminderScreen(
+    reminders: List<StudyReminder> = emptyList(),
+    onAddReminder: (String, String, String) -> Unit = { _, _, _ -> },
+    onDeleteReminder: (String) -> Unit = {},
+    onToggleReminder: (String, Boolean) -> Unit = { _, _ -> }
+) {
+    var showAddDialog by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf("") }
+    var days by remember { mutableStateOf("") }
+
+    if (showAddDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Set Study Reminder", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    TextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        placeholder = { Text("What to study?") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = colorResource(id = R.color.accent_primary)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextField(
+                        value = time,
+                        onValueChange = { time = it },
+                        placeholder = { Text("Time (e.g., 8:00 PM)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = colorResource(id = R.color.accent_primary)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TextField(
+                        value = days,
+                        onValueChange = { days = it },
+                        placeholder = { Text("Days (e.g., Mon, Wed, Fri)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = colorResource(id = R.color.accent_primary)
+                        )
+                    )
+                }
+            },
