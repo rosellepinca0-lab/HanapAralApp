@@ -69,3 +69,66 @@ fun HomeScreen(
                             )
                         }
                     }
+
+                    if (isProfileShowing) {
+                        IconButton(onClick = onEditClick) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profile",
+                                tint = if (isEditingProfile) colorResource(id = R.color.accent_primary) else colorResource(id = R.color.text_secondary)
+                            )
+                        }
+                    }
+
+                    TextButton(onClick = onProfileClick) {
+                        Text(
+                            text = if (isProfileShowing) "Group Chats" else "Profile",
+                            color = colorResource(id = R.color.accent_primary),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    TextButton(onClick = onSignOutClick) {
+                        Text(
+                            text = "Sign Out",
+                            color = colorResource(id = R.color.text_secondary)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(id = R.color.surface)
+                )
+            )
+        },
+        floatingActionButton = {
+            if (!isProfileShowing) {
+                ExtendedFloatingActionButton(
+                    onClick = onCreateGroupClick,
+                    containerColor = colorResource(id = R.color.accent_primary),
+                    contentColor = Color.White,
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(text = "Create Group") }
+                )
+            }
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            content()
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(isAdmin = true) {
+        Box(Modifier.fillMaxSize()) {
+            Text("Main Content Area", modifier = Modifier.padding(16.dp))
+        }
+    }
+}
