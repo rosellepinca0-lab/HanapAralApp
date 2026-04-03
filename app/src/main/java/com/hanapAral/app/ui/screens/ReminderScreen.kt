@@ -86,3 +86,101 @@ fun ReminderScreen(
                     )
                 }
             },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (title.isNotBlank() && time.isNotBlank()) {
+                            onAddReminder(title, time, days)
+                            title = ""
+                            time = ""
+                            days = ""
+                            showAddDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.accent_primary)),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text("SET REMINDER")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddDialog = false }) {
+                    Text("CANCEL", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(8.dp)
+        )
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 24.dp)
+            ) {
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = colorResource(id = R.color.accent_primary),
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Study Reminders",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.text_primary)
+                )
+            }
+
+            if (reminders.isEmpty()) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⏰", fontSize = 48.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "No reminders set.",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            "Stay consistent with your studies!",
+                            color = Color.Gray.copy(alpha = 0.7f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(reminders) { reminder ->
+                        ReminderCard(
+                            reminder = reminder,
+                            onDelete = { onDeleteReminder(reminder.id) },
+                            onToggle = { isActive -> onToggleReminder(reminder.id, isActive) }
+                        )
+                    }
+                }
+            }
+        }
+
+        FloatingActionButton(
+            onClick = { showAddDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            containerColor = colorResource(id = R.color.accent_primary),
+            contentColor = Color.White,
+            shape = CircleShape
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Reminder")
+        }
+    }
+}
