@@ -79,7 +79,7 @@ fun HomeScreen(
                             )
                         }
                     }
-
+                    
                     TextButton(onClick = onProfileClick) {
                         Text(
                             text = if (isProfileShowing) "Group Chats" else "Profile",

@@ -70,7 +70,7 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-
+        
         // Profile Image
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -136,7 +136,7 @@ fun ProfileScreen(
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("Year Level") },
-                trailingIcon = {
+                trailingIcon = { 
                     if (!isReadOnly) {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     }
@@ -175,9 +175,9 @@ fun ProfileScreen(
         // Update Button
         if (!isReadOnly) {
             Button(
-                onClick = {
+                onClick = { 
                     onUpdateClick(course, yearLevel)
-                    showViewPopup = true
+                    showViewPopup = true 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,7 +196,7 @@ fun ProfileScreen(
                     )
                 } else {
                     Text(
-                        text = "Update Profile",
+                        text = "Update Profile", 
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
@@ -206,6 +206,7 @@ fun ProfileScreen(
         }
     }
 }
+
 @Composable
 fun ProfileViewPopup(
     name: String,
@@ -235,9 +236,9 @@ fun ProfileViewPopup(
                     tint = colorResource(id = R.color.accent_primary),
                     modifier = Modifier.size(48.dp)
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 Text(
                     text = "Profile Updated Successfully!",
                     fontSize = 18.sp,
@@ -245,9 +246,9 @@ fun ProfileViewPopup(
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
-
+                
                 // Profile Preview
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -262,26 +263,26 @@ fun ProfileViewPopup(
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 Text(
                     text = name,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-
+                
                 Text(
                     text = email,
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray.copy(alpha = 0.5f))
-
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -289,9 +290,9 @@ fun ProfileViewPopup(
                     Text(text = "Course:", fontWeight = FontWeight.Medium, color = Color.Gray)
                     Text(text = course, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
-
+                
                 Spacer(modifier = Modifier.height(8.dp))
-
+                
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -299,9 +300,9 @@ fun ProfileViewPopup(
                     Text(text = "Year Level:", fontWeight = FontWeight.Medium, color = Color.Gray)
                     Text(text = yearLevel, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
-
+                
                 Spacer(modifier = Modifier.height(32.dp))
-
+                
                 Button(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth(),

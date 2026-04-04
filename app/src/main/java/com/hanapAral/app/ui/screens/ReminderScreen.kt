@@ -30,6 +30,7 @@ data class StudyReminder(
     val days: String,
     val isActive: Boolean = true
 )
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
