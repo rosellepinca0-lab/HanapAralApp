@@ -47,7 +47,7 @@ fun GroupDetailScreen(
     var chatText by remember { mutableStateOf("") }
     var showAnnouncementDialog by remember { mutableStateOf(false) }
     var announcementText by remember { mutableStateOf("") }
-
+    
     val announcementTypes = listOf("Group Announcement", "Study Reminder")
     var selectedType by remember { mutableStateOf(announcementTypes[0]) }
 
@@ -91,7 +91,7 @@ fun GroupDetailScreen(
                         color = Color.Gray,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-
+                    
                     // Radio Button Group
                     Column(Modifier.selectableGroup()) {
                         announcementTypes.forEach { text ->
@@ -124,16 +124,16 @@ fun GroupDetailScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-
+                    
                     TextField(
                         value = announcementText,
                         onValueChange = { announcementText = it },
-                        placeholder = {
+                        placeholder = { 
                             Text(
-                                if (selectedType == "Study Reminder") "Enter study details (time, topic)..."
-                                else "Enter your announcement...",
+                                if (selectedType == "Study Reminder") "Enter study details (time, topic)..." 
+                                else "Enter your announcement...", 
                                 color = colorResource(id = R.color.text_secondary).copy(alpha = 0.6f)
-                            )
+                            ) 
                         },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
@@ -154,18 +154,18 @@ fun GroupDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
+                title = { 
                     Text(
                         group?.name ?: "Group Detail",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorResource(id = R.color.text_primary)
-                    )
+                    ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = "Back",
                             tint = colorResource(id = R.color.text_primary)
                         )
@@ -175,8 +175,8 @@ fun GroupDetailScreen(
                     if (isAdminOfGroup) {
                         IconButton(onClick = { showAnnouncementDialog = true }) {
                             Icon(
-                                Icons.Default.Add,
-                                contentDescription = "Add Announcement",
+                                Icons.Default.Add, 
+                                contentDescription = "Add Announcement", 
                                 tint = colorResource(id = R.color.accent_primary)
                             )
                         }

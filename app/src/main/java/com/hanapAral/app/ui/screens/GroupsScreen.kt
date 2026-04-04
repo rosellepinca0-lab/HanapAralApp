@@ -62,6 +62,7 @@ fun GroupsScreen(
         }
     }
 }
+
 @Composable
 fun GroupCard(
     group: StudyGroup,
@@ -136,6 +137,7 @@ fun GroupCard(
         }
     }
 }
+
 @Composable
 fun EmptyGroupsState() {
     Column(

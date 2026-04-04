@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hanapAral.app.R
+
 @Composable
 fun LoginScreen(
     isLoading: Boolean = false,
@@ -75,7 +76,7 @@ fun LoginScreen(
                     color = Color.White
                 )
             }
-
+            
             Spacer(modifier = Modifier.height(80.dp))
         }
     }
