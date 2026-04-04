@@ -1,22 +1,20 @@
 package com.hanapAral.app.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hanapAral.app.R
@@ -24,120 +22,113 @@ import com.hanapAral.app.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    isAdmin: Boolean,
-    isProfileShowing: Boolean,
-    isEditingProfile: Boolean,
-    onAdminClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onSignOutClick: () -> Unit,
-    onCreateGroupClick: () -> Unit,
+    isAdmin: Boolean = false,
+    isProfileShowing: Boolean = false,
+    isEditingProfile: Boolean = false,
+    onAdminClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    onEditClick: () -> Unit = {},
+    onSignOutClick: () -> Unit = {},
+    onCreateGroupClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = if (isProfileShowing) "Profile" else "HanapAral",
+                            text = "HanapAral",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = colorResource(id = R.color.text_primary)
                         )
-                        if (!isProfileShowing) {
-                            Text(
-                                text = "Find your study group",
-                                fontSize = 12.sp,
-                                color = colorResource(id = R.color.text_secondary)
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    if (isAdmin && !isProfileShowing) {
-                        IconButton(onClick = onAdminClick) {
-                            Icon(
-                                Icons.Default.AdminPanelSettings,
-                                contentDescription = "Admin",
-                                tint = colorResource(id = R.color.accent_primary)
-                            )
-                        }
-                    }
-                    
-                    if (isProfileShowing) {
-                        IconButton(onClick = onEditClick) {
-                            Icon(
-                                if (isEditingProfile) Icons.Default.Close else Icons.Default.Edit,
-                                contentDescription = "Edit",
-                                tint = colorResource(id = R.color.accent_primary)
-                            )
-                        }
-                        IconButton(onClick = onSignOutClick) {
-                            Icon(
-                                Icons.Default.ExitToApp,
-                                contentDescription = "Sign Out",
-                                tint = Color.Red
-                            )
-                        }
-                    }
-
-                    IconButton(
-                        onClick = onProfileClick,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = colorResource(id = R.color.accent_primary).copy(alpha = 0.1f),
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
+                        if (isAdmin) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                color = colorResource(id = R.color.accent_primary).copy(alpha = 0.1f),
+                                shape = CircleShape,
+                                modifier = Modifier.size(24.dp)
+                            ) {
                                 Icon(
-                                    if (isProfileShowing) Icons.Default.Home else Icons.Default.Person,
-                                    contentDescription = "Profile",
-                                    tint = colorResource(id = R.color.accent_primary)
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Admin",
+                                    tint = colorResource(id = R.color.accent_primary),
+                                    modifier = Modifier.padding(4.dp)
                                 )
                             }
                         }
                     }
                 },
+                actions = {
+                    if (isAdmin) {
+                        TextButton(onClick = onAdminClick) {
+                            Text(
+                                text = "Settings",
+                                color = colorResource(id = R.color.accent_primary)
+                            )
+                        }
+                    }
+
+                    if (isProfileShowing) {
+                        IconButton(onClick = onEditClick) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profile",
+                                tint = if (isEditingProfile) colorResource(id = R.color.accent_primary) else colorResource(id = R.color.text_secondary)
+                            )
+                        }
+                    }
+                    
+                    TextButton(onClick = onProfileClick) {
+                        Text(
+                            text = if (isProfileShowing) "Group Chats" else "Profile",
+                            color = colorResource(id = R.color.accent_primary),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    TextButton(onClick = onSignOutClick) {
+                        Text(
+                            text = "Sign Out",
+                            color = colorResource(id = R.color.text_secondary)
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.bg_primary)
+                    containerColor = colorResource(id = R.color.surface)
                 )
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !isProfileShowing,
-                enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
-            ) {
-                FloatingActionButton(
+            if (!isProfileShowing) {
+                ExtendedFloatingActionButton(
                     onClick = onCreateGroupClick,
                     containerColor = colorResource(id = R.color.accent_primary),
                     contentColor = Color.White,
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Create Group")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("New Group", fontWeight = FontWeight.Bold)
-                    }
-                }
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(text = "Create Group") }
+                )
             }
-        }
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(colorResource(id = R.color.bg_primary))
         ) {
             content()
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen(isAdmin = true) {
+        Box(Modifier.fillMaxSize()) {
+            Text("Main Content Area", modifier = Modifier.padding(16.dp))
         }
     }
 }

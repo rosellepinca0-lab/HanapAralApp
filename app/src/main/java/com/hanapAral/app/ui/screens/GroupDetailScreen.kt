@@ -1,22 +1,25 @@
 package com.hanapAral.app.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,246 +28,287 @@ import com.hanapAral.app.R
 import com.hanapAral.app.data.model.Announcement
 import com.hanapAral.app.data.model.ChatMessage
 import com.hanapAral.app.data.model.StudyGroup
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailScreen(
     group: StudyGroup?,
-    messages: List<ChatMessage>,
     announcements: List<Announcement>,
+    chatMessages: List<ChatMessage>,
     currentUserId: String,
-    onSendMessage: (String) -> Unit,
-    onPostAnnouncement: (String) -> Unit,
-    onLeaveGroup: () -> Unit,
-    onBackPressed: () -> Unit
+    isAdminOfGroup: Boolean = false,
+    isLoading: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onPostAnnouncement: (String, String) -> Unit = { _, _ -> },
+    onSendMessage: (String) -> Unit = {}
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Chat", "Announcements", "Members")
+    var chatText by remember { mutableStateOf("") }
+    var showAnnouncementDialog by remember { mutableStateOf(false) }
+    var announcementText by remember { mutableStateOf("") }
+    
+    val announcementTypes = listOf("Group Announcement", "Study Reminder")
+    var selectedType by remember { mutableStateOf(announcementTypes[0]) }
+
+    if (showAnnouncementDialog) {
+        AlertDialog(
+            onDismissRequest = { showAnnouncementDialog = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (announcementText.isNotBlank()) {
+                            onPostAnnouncement(announcementText, selectedType)
+                            announcementText = ""
+                            showAnnouncementDialog = false
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.accent_primary)
+                    )
+                ) {
+                    Text("POST", fontWeight = FontWeight.Bold)
+                }
+            },
+            title = {
+                Text(
+                    "New Announcement",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Select Type:",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    // Radio Button Group
+                    Column(Modifier.selectableGroup()) {
+                        announcementTypes.forEach { text ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .selectable(
+                                        selected = (text == selectedType),
+                                        onClick = { selectedType = text },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(horizontal = 0.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (text == selectedType),
+                                    onClick = null, // null recommended for accessibility with selectable modifier
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = colorResource(id = R.color.accent_primary)
+                                    )
+                                )
+                                Text(
+                                    text = text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    TextField(
+                        value = announcementText,
+                        onValueChange = { announcementText = it },
+                        placeholder = { 
+                            Text(
+                                if (selectedType == "Study Reminder") "Enter study details (time, topic)..." 
+                                else "Enter your announcement...", 
+                                color = colorResource(id = R.color.text_secondary).copy(alpha = 0.6f)
+                            ) 
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = colorResource(id = R.color.accent_secondary),
+                            unfocusedIndicatorColor = colorResource(id = R.color.divider)
+                        )
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(8.dp)
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = group?.name ?: "Study Group",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                        Text(
-                            text = group?.subject ?: "",
-                            fontSize = 12.sp,
-                            color = colorResource(id = R.color.accent_primary)
-                        )
-                    }
+                title = { 
+                    Text(
+                        group?.name ?: "Group Detail",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.text_primary)
+                    ) 
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = "Back",
+                            tint = colorResource(id = R.color.text_primary)
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = onLeaveGroup) {
-                        Icon(Icons.Default.Logout, contentDescription = "Leave", tint = Color.Red.copy(alpha = 0.7f))
+                    if (isAdminOfGroup) {
+                        IconButton(onClick = { showAnnouncementDialog = true }) {
+                            Icon(
+                                Icons.Default.Add, 
+                                contentDescription = "Add Announcement", 
+                                tint = colorResource(id = R.color.accent_primary)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.bg_primary)
+                    containerColor = colorResource(id = R.color.surface)
                 )
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(colorResource(id = R.color.bg_primary))
-        ) {
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = colorResource(id = R.color.accent_primary),
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = colorResource(id = R.color.accent_primary)
-                    )
-                }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = {
-                            Text(
-                                title,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    )
-                }
-            }
-
-            Box(modifier = Modifier.weight(1f)) {
-                when (selectedTab) {
-                    0 -> ChatTab(messages, currentUserId, onSendMessage)
-                    1 -> AnnouncementsTab(announcements, group?.creatorId == currentUserId, onPostAnnouncement)
-                    2 -> MembersTab(group?.members ?: emptyList())
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ChatTab(messages: List<ChatMessage>, currentUserId: String, onSendMessage: (String) -> Unit) {
-    var messageText by remember { mutableStateOf("") }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            reverseLayout = true
-        ) {
-            items(messages.reversed()) { message ->
-                MessageBubble(message, isMe = message.senderId == currentUserId)
-            }
-        }
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            shadowElevation = 8.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .imePadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    placeholder = { Text("Type a message...") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = colorResource(id = R.color.bg_primary),
-                        unfocusedContainerColor = colorResource(id = R.color.bg_primary),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    onClick = {
-                        if (messageText.isNotBlank()) {
-                            onSendMessage(messageText)
-                            messageText = ""
-                        }
-                    },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(colorResource(id = R.color.accent_primary))
-                ) {
-                    Icon(Icons.Default.Send, contentDescription = "Send", tint = Color.White)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MessageBubble(message: ChatMessage, isMe: Boolean) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
-    ) {
-        if (!isMe) {
-            Text(
-                text = message.senderName,
-                fontSize = 10.sp,
-                color = colorResource(id = R.color.text_secondary),
-                modifier = Modifier.padding(start = 12.dp, bottom = 2.dp)
-            )
-        }
-        Surface(
-            shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
-                bottomStart = if (isMe) 16.dp else 4.dp,
-                bottomEnd = if (isMe) 4.dp else 16.dp
-            ),
-            color = if (isMe) colorResource(id = R.color.accent_primary) else Color.White,
-            tonalElevation = 1.dp
-        ) {
-            Text(
-                text = message.content,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                color = if (isMe) Color.White else colorResource(id = R.color.text_primary),
-                fontSize = 15.sp
-            )
-        }
-    }
-}
-
-@Composable
-fun AnnouncementsTab(announcements: List<Announcement>, isCreator: Boolean, onPost: (String) -> Unit) {
-    var announcementText by remember { mutableStateOf("") }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (isCreator) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Post an Announcement",
-                        fontWeight = FontWeight.Bold,
-                        color = colorResource(id = R.color.accent_primary)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedTextField(
-                        value = announcementText,
-                        onValueChange = { announcementText = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("What's new in the group?") },
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            if (announcementText.isNotBlank()) {
-                                onPost(announcementText)
-                                announcementText = ""
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.End),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.accent_primary))
-                    ) {
-                        Text("POST")
+        },
+        bottomBar = {
+            ChatInputBar(
+                value = chatText,
+                onValueChange = { chatText = it },
+                onSendClick = {
+                    if (chatText.isNotBlank()) {
+                        onSendMessage(chatText)
+                        chatText = ""
                     }
                 }
+            )
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
+    ) { paddingValues ->
+        if (isLoading || group == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = colorResource(id = R.color.accent_primary))
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
+                item {
+                    GroupInfoCard(group)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Announcements",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(id = R.color.text_primary)
+                        )
+                        if (isAdminOfGroup) {
+                            TextButton(onClick = { showAnnouncementDialog = true }) {
+                                Text("Add New", color = colorResource(id = R.color.accent_primary))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (announcements.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No announcements yet",
+                            color = colorResource(id = R.color.text_secondary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    items(announcements) { announcement ->
+                        AnnouncementItem(announcement)
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = colorResource(id = R.color.divider))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Group Chat",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.text_primary),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                items(chatMessages) { message ->
+                    ChatMessageItem(message, isCurrentUser = message.senderId == currentUserId)
+                }
             }
         }
+    }
+}
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(announcements.sortedByDescending { it.timestamp }) { announcement ->
-                AnnouncementItem(announcement)
-            }
+@Composable
+fun GroupInfoCard(group: StudyGroup) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.surface)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = group.subject,
+                fontSize = 16.sp,
+                color = colorResource(id = R.color.accent_primary),
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = group.description,
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Admin: ${group.adminName}",
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
+            Text(
+                text = "${group.members.size}/${group.maxMembers} members",
+                fontSize = 14.sp,
+                color = colorResource(id = R.color.text_secondary)
+            )
         }
     }
 }
@@ -272,66 +316,121 @@ fun AnnouncementsTab(announcements: List<Announcement>, isCreator: Boolean, onPo
 @Composable
 fun AnnouncementItem(announcement: Announcement) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.surface))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Campaign,
-                    contentDescription = null,
-                    tint = colorResource(id = R.color.accent_primary)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = announcement.authorName,
+                    text = announcement.type ?: "Group Announcement",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    color = colorResource(id = R.color.accent_primary)
+                )
+                Text(
+                    text = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(Date(announcement.timestamp)),
+                    fontSize = 11.sp,
+                    color = colorResource(id = R.color.text_secondary)
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = announcement.content,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 color = colorResource(id = R.color.text_primary)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "By ${announcement.authorName}",
+                fontSize = 11.sp,
+                color = colorResource(id = R.color.text_secondary)
             )
         }
     }
 }
 
 @Composable
-fun MembersTab(members: List<String>) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+fun ChatMessageItem(message: ChatMessage, isCurrentUser: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalAlignment = if (isCurrentUser) Alignment.End else Alignment.Start
     ) {
-        items(members) { userId ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+        if (!isCurrentUser) {
+            Text(
+                text = message.senderName,
+                fontSize = 11.sp,
+                color = colorResource(id = R.color.text_secondary),
+                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            )
+        }
+        Surface(
+            color = if (isCurrentUser) colorResource(id = R.color.accent_primary) else colorResource(id = R.color.surface),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = if (isCurrentUser) 16.dp else 0.dp,
+                bottomEnd = if (isCurrentUser) 0.dp else 16.dp
+            ),
+            tonalElevation = 1.dp
+        ) {
+            Text(
+                text = message.message,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                fontSize = 14.sp,
+                color = if (isCurrentUser) Color.White else colorResource(id = R.color.text_primary)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatInputBar(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSendClick: () -> Unit
+) {
+    Surface(
+        tonalElevation = 2.dp,
+        color = colorResource(id = R.color.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Type a message...") },
+                maxLines = 4,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorResource(id = R.color.accent_primary)
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = onSendClick,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(colorResource(id = R.color.accent_primary), CircleShape)
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        modifier = Modifier.size(32.dp),
-                        shape = CircleShape,
-                        color = colorResource(id = R.color.bg_primary)
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier.padding(4.dp),
-                            tint = colorResource(id = R.color.accent_primary)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = "Member ID: $userId", fontSize = 14.sp)
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send",
+                    tint = Color.White
+                )
             }
         }
     }

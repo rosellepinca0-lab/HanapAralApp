@@ -1,29 +1,30 @@
 package com.hanapAral.app.ui.screens
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.hanapAral.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,17 +36,30 @@ fun ProfileScreen(
     initialCourse: String,
     initialYearLevel: String,
     yearLevels: Array<String>,
-    isLoading: Boolean,
-    isReadOnly: Boolean,
-    onUpdateClick: (String, String) -> Unit
+    isLoading: Boolean = false,
+    isReadOnly: Boolean = true,
+    onUpdateClick: (course: String, yearLevel: String) -> Unit = { _, _ -> }
 ) {
     var course by remember { mutableStateOf(initialCourse) }
     var yearLevel by remember { mutableStateOf(initialYearLevel) }
     var expanded by remember { mutableStateOf(false) }
+    var showViewPopup by remember { mutableStateOf(false) }
 
     LaunchedEffect(initialCourse, initialYearLevel) {
         course = initialCourse
         yearLevel = initialYearLevel
+    }
+
+    // Profile View Popup
+    if (showViewPopup) {
+        ProfileViewPopup(
+            name = name,
+            email = email,
+            photoUrl = photoUrl,
+            course = course,
+            yearLevel = yearLevel,
+            onDismiss = { showViewPopup = false }
+        )
     }
 
     Column(
@@ -55,118 +69,102 @@ fun ProfileScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Header
-        Box(
-            modifier = Modifier.size(120.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                shape = CircleShape,
-                color = colorResource(id = R.color.accent_primary).copy(alpha = 0.1f)
-            ) {
-                AsyncImage(
-                    model = photoUrl,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    error = painterResource(id = android.R.drawable.ic_menu_report_image) // Fallback
-                )
-            }
-            
-            if (!isReadOnly) {
-                Surface(
-                    modifier = Modifier.size(32.dp),
-                    shape = CircleShape,
-                    color = colorResource(id = R.color.accent_primary),
-                    tonalElevation = 4.dp
-                ) {
-                    Icon(
-                        Icons.Default.CameraAlt,
-                        contentDescription = "Change Picture",
-                        modifier = Modifier.padding(6.dp),
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
+        
+        // Profile Image
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(photoUrl)
+                .crossfade(true)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
+                .build(),
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .size(140.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray.copy(alpha = 0.2f), CircleShape),
+            contentScale = ContentScale.Crop
+        )
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Name and Email
         Text(
             text = name,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.text_primary)
+            color = Color.Black
         )
+
         Text(
             text = email,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             color = colorResource(id = R.color.text_secondary)
         )
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Profile Details Card
-        Card(
+        // Course Field
+        OutlinedTextField(
+            value = course,
+            onValueChange = { course = it },
+            label = { Text("Course") },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            singleLine = true,
+            readOnly = isReadOnly,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = if (isReadOnly) Color.Gray else Color.Black,
+                unfocusedBorderColor = Color.Gray,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Color.Gray,
+                cursorColor = if (isReadOnly) Color.Transparent else Color.Black
+            )
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Year Level Dropdown
+        ExposedDropdownMenuBox(
+            expanded = expanded && !isReadOnly,
+            onExpandedChange = { if (!isReadOnly) expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text(
-                    "Academic Information",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.accent_primary)
+            OutlinedTextField(
+                value = yearLevel,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Year Level") },
+                trailingIcon = { 
+                    if (!isReadOnly) {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    }
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (isReadOnly) Color.Gray else Color.Black,
+                    unfocusedBorderColor = Color.Gray,
+                    focusedLabelColor = Color.Gray,
+                    unfocusedLabelColor = Color.Gray
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                ProfileTextField(
-                    label = "Course",
-                    value = course,
-                    onValueChange = { course = it },
-                    icon = Icons.Default.School,
-                    isReadOnly = isReadOnly
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Year Level Dropdown
-                ExposedDropdownMenuBox(
-                    expanded = expanded && !isReadOnly,
-                    onExpandedChange = { if (!isReadOnly) expanded = it }
+            )
+            if (!isReadOnly) {
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
                 ) {
-                    OutlinedTextField(
-                        value = yearLevel,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Year Level") },
-                        leadingIcon = { Icon(Icons.Default.CalendarToday, null) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = colorResource(id = R.color.accent_primary),
-                            focusedLabelColor = colorResource(id = R.color.accent_primary)
+                    yearLevels.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                yearLevel = selectionOption
+                                expanded = false
+                            }
                         )
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expanded && !isReadOnly,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        yearLevels.forEach { level ->
-                            DropdownMenuItem(
-                                text = { Text(level) },
-                                onClick = {
-                                    yearLevel = level
-                                    expanded = false
-                                }
-                            )
-                        }
                     }
                 }
             }
@@ -174,52 +172,159 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
+        // Update Button
         if (!isReadOnly) {
             Button(
-                onClick = { onUpdateClick(course, yearLevel) },
+                onClick = { 
+                    onUpdateClick(course, yearLevel)
+                    showViewPopup = true 
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                enabled = !isLoading && course.isNotBlank(),
+                shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.accent_primary)
-                ),
-                enabled = !isLoading
+                )
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
                 } else {
-                    Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        text = "Update Profile", 
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileTextField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    icon: ImageVector,
-    isReadOnly: Boolean
+fun ProfileViewPopup(
+    name: String,
+    email: String,
+    photoUrl: String?,
+    course: String,
+    yearLevel: String,
+    onDismiss: () -> Unit
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        leadingIcon = { Icon(icon, null) },
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = isReadOnly,
-        shape = RoundedCornerShape(12.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = colorResource(id = R.color.accent_primary),
-            focusedLabelColor = colorResource(id = R.color.accent_primary)
-        )
-    )
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Success",
+                    tint = colorResource(id = R.color.accent_primary),
+                    modifier = Modifier.size(48.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = "Profile Updated Successfully!",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Profile Preview
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(photoUrl)
+                        .crossfade(true)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .error(R.drawable.ic_profile_placeholder)
+                        .build(),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                
+                Text(
+                    text = email,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray.copy(alpha = 0.5f))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Course:", fontWeight = FontWeight.Medium, color = Color.Gray)
+                    Text(text = course, fontWeight = FontWeight.Bold, color = Color.Black)
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Year Level:", fontWeight = FontWeight.Medium, color = Color.Gray)
+                    Text(text = yearLevel, fontWeight = FontWeight.Bold, color = Color.Black)
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.accent_primary))
+                ) {
+                    Text("DONE", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
 }
 
-// Dummy helper as painterResource is needed for AsyncImage error
+@Preview(showBackground = true)
 @Composable
-fun painterResource(id: Int) = androidx.compose.ui.res.painterResource(id)
+fun ProfileScreenPreview() {
+    ProfileScreen(
+        name = "Pinca Roselle",
+        email = "rosellepinca0@gmail.com",
+        photoUrl = null,
+        initialCourse = "BSIT",
+        initialYearLevel = "3rd Year",
+        yearLevels = arrayOf("1st Year", "2nd Year", "3rd Year", "4th Year")
+    )
+}
