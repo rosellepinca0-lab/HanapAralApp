@@ -1,6 +1,6 @@
 # HanapAral Project
 
-HanapAral is a study group finder application designed to help students connect, collaborate, and manage study sessions. This document outlines the project structure, individual team contributions, and the development workflow.
+HanapAral is a study group finder application designed to help students connect, collaborate, and manage study sessions.
 
 ---
 
@@ -42,55 +42,42 @@ HanapAral2/
 
 ---
 
-## Team Contributions
+## Project Timeline & Contributions (Based on Git History)
 
-### Pinca (Team Lead)
-Responsible for core infrastructure, security, and project management.
-*   **Infrastructure:** Handled build configurations (Gradle), Firebase project initialization, and ProGuard security rules.
-*   **Core Logic:** Implemented the main navigation flow, authentication lifecycle, and dynamic feature toggles via Remote Config.
-*   **Security & Utils:** Developed the biometric authentication helper and established global constants for the project.
-*   **DevOps:** Managed the GitHub repository, performed code reviews, and handled branch merging from `develop` to `main`.
+### 📌 March 29 - April 1: Foundation & Core Features
+*   **Pinca:** Established project infrastructure, navigation flow, and Firebase integration.
+*   **Pelayo:** Initial UI designs for login and group listing.
+*   **Pamintuan:** Implementation of authentication logic and Firestore data saving.
+*   **Panganiban:** Database schema design for users and study groups.
+*   **Pesito:** Lifecycle management and initial system testing.
 
-### Pelayo (Lead UI/UX Developer)
-Responsible for the visual design and end-to-end user experience.
-*   **UI Design:** Designed and implemented the major Jetpack Compose screens, including the Home, Login, Profile, and Group Creation screens.
-*   **Interactive Components:** Built the UI for group announcements, chat bubbles, and study reminders.
-*   **Quality Assurance:** Led the full system testing to ensure UI consistency and smooth transitions across all modules.
+### 📌 April 2: Cloud Messaging & FCM
+*   **Pelayo:** Defined messaging models (`ChatMessage`, `Announcement`) and initiated `GroupDetailActivity`.
+*   **Pamintuan:** Integrated Firebase Cloud Messaging (FCM) for push notifications.
+*   **Panganiban (Paolo):** Implemented user registration logic in `ProfileSetupActivity` and FCM token storage.
 
-### Pamintuan (Authentication & User Logic)
-Responsible for user onboarding and backend integration.
-*   **Authentication:** Implemented Google Sign-In logic and handled the authentication repository.
-*   **User Onboarding:** Developed the backend logic for user registration and profile setup activities.
-*   **Cloud Services:** Integrated Firebase Cloud Messaging (FCM) for push notifications and set up the Remote Config infrastructure.
-*   **Resources:** Managed the global `strings.xml` and network security configurations.
+### 📌 April 3: Remote Config & UI Expansion
+*   **Pelayo (Dxtrply):** Committed major UI components: `GroupDetailScreen`, `ReminderScreen`, and `HomeScreen`.
+*   **Pesito (Ronel):** Implemented `GroupsFragment`, `AdminViewModel`, and validated join group restrictions.
+*   **Panganiban (Paolo):** Configured Remote Config parameters for feature toggles and group limits.
 
-### Panganiban (Database & Admin Systems)
-Responsible for data architecture and messaging systems.
-*   **Data Modeling:** Defined the database structures for Users, Study Groups, and Chat Messages in Firestore.
-*   **Backend Services:** Implemented token management for cloud messaging and handled member list updates in the database.
-*   **Admin Tools:** Developed the Admin Panel dashboard and moderation tools.
-*   **Configurations:** Managed the Android Manifest and XML file path configurations for storage.
-
-### Pesito (Lifecycle & Testing)
-Responsible for application stability and moderation state.
-*   **App Lifecycle:** Initialized notification channels and managed the main Application class logic.
-*   **Testing:** Conducted rigorous testing for login/logout flows, group joining restrictions, and notification delivery.
-*   **State Management:** Developed the Admin and Profile ViewModels to manage moderation and user states.
-*   **Validation:** Implemented input field validations and utility extensions to ensure data integrity.
+### 📌 April 4: Final Polishing & Debugging
+*   **Pinca:** Finalized application permissions, security rules (ProGuard), and biometric helper. Integrated final assets and Google services.
+*   **Panganiban (Paolo):** Resolved backend logic bugs in repositories.
+*   **Pesito (Ronel):** Conducted final UI/UX polishing and transition refinements.
 
 ---
 
-## Git Workflow
+## Git Workflow Guidelines
 
 To maintain a clean and stable codebase, the team follows these guidelines:
 
 1.  **Branching Strategy:** Every member works on a dedicated branch named after their surname (e.g., `git checkout -b Pelayo`).
-2.  **Incremental Progress:** Developers are encouraged to commit in small batches rather than uploading large blocks of code at once.
-3.  **Commit Conventional Prefixes:**
+2.  **Commit Conventional Prefixes:**
     *   `feat:` for new features or structural additions.
     *   `fix:` for bug fixes.
     *   `style:` for UI/UX improvements or resource updates.
     *   `test:` for adding or performing tests.
     *   `chore:` for configuration and maintenance tasks.
-4.  **Collaboration:** Once a task is complete, a **Pull Request (PR)** is created targeting the `develop` branch.
-5.  **Final Integration:** After verification and debugging, the lead merges the `develop` branch into `main` for the final build.
+3.  **Collaboration:** Development occurs in the `develop` branch via Pull Requests from member branches.
+4.  **Final Integration:** Stable code is merged into the `main` branch for production readiness.
