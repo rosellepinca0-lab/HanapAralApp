@@ -42,3 +42,4 @@ class RemoteConfigRepository {
 
     fun getAnnouncementHeader(): String =
         remoteConfig.getString("announcement_header")
+}

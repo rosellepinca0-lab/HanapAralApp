@@ -1,19 +1,15 @@
 package com.hanapAral.app.ui.screens
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,183 +19,119 @@ import com.hanapAral.app.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminPanelScreen(
-    maxMembers: Int,
-    isJoinEnabled: Boolean,
-    isGroupCreationEnabled: Boolean,
-    onMaxMembersChange: (Int) -> Unit,
-    onJoinToggle: (Boolean) -> Unit,
-    onGroupCreationToggle: (Boolean) -> Unit,
-    onBackPressed: () -> Unit
+    groupCreationEnabled: Boolean,
+    joinEnabled: Boolean,
+    maxMembers: Long,
+    announcementHeader: String,
+    notifications: List<String>,
+    isLoading: Boolean = false,
+    onBackClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Admin Panel", fontWeight = FontWeight.Bold) },
+                title = { Text("Admin Panel") },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(id = R.color.bg_primary)
+                    containerColor = colorResource(id = R.color.surface),
+                    titleContentColor = colorResource(id = R.color.text_primary)
                 )
             )
-        }
+        },
+        containerColor = colorResource(id = R.color.bg_primary)
     ) { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(colorResource(id = R.color.bg_primary)),
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp)
         ) {
-            item {
-                AdminSectionTitle("Global Settings")
-            }
-
-            item {
-                AdminControlCard(
-                    title = "Allow Joining Groups",
-                    description = "Users can join existing study groups",
-                    icon = Icons.Default.GroupAdd,
-                    checked = isJoinEnabled,
-                    onCheckedChange = onJoinToggle
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 24.dp),
+                    color = colorResource(id = R.color.accent_primary)
                 )
             }
 
-            item {
-                AdminControlCard(
-                    title = "Allow Group Creation",
-                    description = "Users can create new study groups",
-                    icon = Icons.Default.AddCircle,
-                    checked = isGroupCreationEnabled,
-                    onCheckedChange = onGroupCreationToggle
-                )
-            }
+            Text(
+                text = "New User Notifications",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.text_primary),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Groups,
-                                contentDescription = null,
-                                tint = colorResource(id = R.color.accent_primary)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                "Max Members per Group",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
-                        Slider(
-                            value = maxMembers.toFloat(),
-                            onValueChange = { onMaxMembersChange(it.toInt()) },
-                            valueRange = 2f..100f,
-                            steps = 98,
-                            colors = SliderDefaults.colors(
-                                thumbColor = colorResource(id = R.color.accent_primary),
-                                activeTrackColor = colorResource(id = R.color.accent_primary)
-                            )
+            if (notifications.isEmpty()) {
+                Text(
+                    text = "No new notifications",
+                    fontSize = 14.sp,
+                    color = colorResource(id = R.color.text_secondary),
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+            } else {
+                notifications.forEach { notification ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = notification,
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 14.sp
                         )
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("2", color = Color.Gray)
-                            Text(
-                                text = "$maxMembers",
-                                fontWeight = FontWeight.ExtraBold,
-                                color = colorResource(id = R.color.accent_primary),
-                                fontSize = 20.sp
-                            )
-                            Text("100", color = Color.Gray)
-                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
+
+            Text(
+                text = "Remote Config Status",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.text_primary),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            ConfigCard(text = "Group Creation: ${if (groupCreationEnabled) "Enabled" else "Disabled"}")
+            ConfigCard(text = "Join Groups: ${if (joinEnabled) "Enabled" else "Disabled"}")
+            ConfigCard(text = "Max Members: $maxMembers")
+            ConfigCard(text = "Announcement Header: $announcementHeader")
+
+            Text(
+                text = "To toggle features: Go to Firebase Console → Remote Config → Edit values → Publish",
+                fontSize = 13.sp,
+                color = colorResource(id = R.color.text_secondary),
+                modifier = Modifier.padding(top = 24.dp)
+            )
         }
     }
 }
 
 @Composable
-fun AdminSectionTitle(title: String) {
-    Text(
-        text = title,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = colorResource(id = R.color.text_secondary),
-        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
-    )
-}
-
-@Composable
-fun AdminControlCard(
-    title: String,
-    description: String,
-    icon: ImageVector,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
+fun ConfigCard(text: String) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(id = R.color.surface)
+        )
     ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = colorResource(id = R.color.accent_primary).copy(alpha = 0.1f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = colorResource(id = R.color.accent_primary)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = colorResource(id = R.color.text_primary)
-                )
-                Text(
-                    text = description,
-                    fontSize = 12.sp,
-                    color = colorResource(id = R.color.text_secondary)
-                )
-            }
-            
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = colorResource(id = R.color.accent_primary),
-                    checkedTrackColor = colorResource(id = R.color.accent_primary).copy(alpha = 0.5f)
-                )
-            )
-        }
+        Text(
+            text = text,
+            modifier = Modifier.padding(16.dp),
+            fontSize = 16.sp,
+            color = colorResource(id = R.color.text_primary)
+        )
     }
 }
