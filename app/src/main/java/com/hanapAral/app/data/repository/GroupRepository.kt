@@ -93,4 +93,3 @@ class GroupRepository {
             }
         awaitClose { listener.remove() }
     }
-}

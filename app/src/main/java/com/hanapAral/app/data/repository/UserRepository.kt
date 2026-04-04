@@ -26,4 +26,3 @@ class UserRepository {
     suspend fun updateFcmToken(uid: String, token: String) {
         usersCollection.document(uid).update("fcmToken", token).await()
     }
-}
