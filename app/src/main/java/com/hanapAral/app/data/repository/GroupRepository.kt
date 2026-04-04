@@ -56,3 +56,41 @@ class GroupRepository {
         groupsCollection.document(groupId)
             .update("members", FieldValue.arrayRemove(userId)).await()
     }
+
+    suspend fun postAnnouncement(groupId: String, announcement: Announcement) {
+        val docRef = groupsCollection.document(groupId)
+            .collection("announcements").document()
+        val withId = announcement.copy(id = docRef.id)
+        docRef.set(withId).await()
+    }
+
+    suspend fun getAnnouncements(groupId: String): List<Announcement> {
+        val snapshot = groupsCollection.document(groupId)
+            .collection("announcements")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .get().await()
+        return snapshot.documents.mapNotNull { it.toObject(Announcement::class.java) }
+    }
+
+    suspend fun sendChatMessage(groupId: String, message: ChatMessage) {
+        val docRef = groupsCollection.document(groupId)
+            .collection("messages").document()
+        val withId = message.copy(id = docRef.id)
+        docRef.set(withId).await()
+    }
+
+    fun getChatMessagesFlow(groupId: String): Flow<List<ChatMessage>> = callbackFlow {
+        val listener = groupsCollection.document(groupId)
+            .collection("messages")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val messages = snapshot?.documents?.mapNotNull { it.toObject(ChatMessage::class.java) } ?: emptyList()
+                trySend(messages)
+            }
+        awaitClose { listener.remove() }
+    }
+}
