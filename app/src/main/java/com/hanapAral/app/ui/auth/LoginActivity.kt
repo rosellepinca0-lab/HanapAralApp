@@ -14,6 +14,7 @@ import com.hanapAral.app.data.repository.AuthRepository
 import com.hanapAral.app.ui.home.HomeActivity
 import com.hanapAral.app.ui.profile.ProfileSetupActivity
 import com.hanapAral.app.ui.screens.LoginScreen
+import com.hanapAral.app.util.BiometricHelper
 import com.hanapAral.app.util.showToast
 import com.hanapAral.app.viewmodel.AuthViewModel
 import com.hanapAral.app.viewmodel.ProfileViewModel
@@ -51,7 +52,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         authViewModel.getCurrentUser()?.let { user ->
-            profileViewModel.checkProfileExists(user.uid)
+            checkProfileAndNavigate(user.uid)
         }
 
         observeViewModel()
@@ -60,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
     private fun observeViewModel() {
         authViewModel.user.observe(this) { user ->
             user?.let {
-                profileViewModel.checkProfileExists(it.uid)
+                checkProfileAndNavigate(it.uid)
             }
         }
 
@@ -69,19 +70,34 @@ class LoginActivity : AppCompatActivity() {
         }
 
         profileViewModel.profileExists.observe(this) { exists ->
-            if (exists) {
-                startActivity(Intent(this, HomeActivity::class.java))
-                finish()
-            } else {
-                val intent = Intent(this, ProfileSetupActivity::class.java)
-                val user = authViewModel.getCurrentUser()
-                intent.putExtra("uid", user?.uid)
-                intent.putExtra("name", user?.displayName)
-                intent.putExtra("email", user?.email)
-                intent.putExtra("photoUrl", user?.photoUrl?.toString())
-                startActivity(intent)
-                finish()
-            }
+            // Require biometric authentication for ALL users (new or existing)
+            BiometricHelper.showBiometricPrompt(
+                activity = this,
+                title = "Security Verification",
+                subtitle = "Please verify your identity to continue to HanapAral",
+                onSuccess = {
+                    if (exists) {
+                        startActivity(Intent(this, HomeActivity::class.java))
+                        finish()
+                    } else {
+                        val intent = Intent(this, ProfileSetupActivity::class.java)
+                        val user = authViewModel.getCurrentUser()
+                        intent.putExtra("uid", user?.uid)
+                        intent.putExtra("name", user?.displayName)
+                        intent.putExtra("email", user?.email)
+                        intent.putExtra("photoUrl", user?.photoUrl?.toString())
+                        startActivity(intent)
+                        finish()
+                    }
+                },
+                onFailed = {
+                    showToast("Authentication required to access the app.")
+                }
+            )
         }
+    }
+
+    private fun checkProfileAndNavigate(uid: String) {
+        profileViewModel.checkProfileExists(uid)
     }
 }
